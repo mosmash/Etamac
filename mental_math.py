@@ -22,7 +22,7 @@ class SelectionPage(tk.Tk):
         mainframe.rowconfigure(0, weight=1)
         mainframe.pack(pady=100, padx=100)
         tkvar = StringVar(self)
-        choices = {'add_sub', 'add', 'sub', 'custom' }
+        choices = {'add_sub', 'add', 'sub', 'Hard1DigSub' }
         Label(mainframe, text="Choose a test").grid(row=1, column=1)
         popupMenu = OptionMenu(mainframe, tkvar, *choices)
         popupMenu.config(width=20)
@@ -38,7 +38,7 @@ class SelectionPage(tk.Tk):
             root = Tk()
             choices_dict = {'add_sub': ['add', 'sub'],
                             'add': ['add'],
-                            'custom': ['subCustom'],
+                            'Hard1DigSub': ['Hard1DigSub'],
                             'sub': ['sub']}
 
             app = App(root, time, tol, choices_dict[tkvar.get()])
@@ -159,7 +159,7 @@ class App(tk.Frame):
             self.ans = y - x
             return prompt
 
-        def subCustom():
+        def Hard1DigSub():
             x = random.randint(1, 9)
             y = random.randint(1, 9)
             x, y = sorted([x, y])
@@ -208,7 +208,7 @@ class App(tk.Frame):
             self.scr += 1
             self.answer.delete(0, 'end')
         else:
-            self.scr -=1
+            self.scr -=2
 
         self.score["text"] = "score: " + str(self.scr)
 
