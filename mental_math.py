@@ -22,7 +22,7 @@ class SelectionPage(tk.Tk):
         mainframe.rowconfigure(0, weight=1)
         mainframe.pack(pady=100, padx=100)
         tkvar = StringVar(self)
-        choices = {'add_sub', 'add'}
+        choices = {'add_sub', 'add', 'sub', 'custom' }
         Label(mainframe, text="Choose a test").grid(row=1, column=1)
         popupMenu = OptionMenu(mainframe, tkvar, *choices)
         popupMenu.config(width=20)
@@ -32,12 +32,14 @@ class SelectionPage(tk.Tk):
 
         def start_practice():
             print(tkvar.get())
-            time = 180
+            time = 120
 
             tol = 0.1 # approximation error tol
             root = Tk()
             choices_dict = {'add_sub': ['add', 'sub'],
-                            'add': ['add']}
+                            'add': ['add'],
+                            'custom': ['subCustom'],
+                            'sub': ['sub']}
 
             app = App(root, time, tol, choices_dict[tkvar.get()])
             root.mainloop()
@@ -50,6 +52,7 @@ class SelectionPage(tk.Tk):
 class App(tk.Frame):
     def __init__(self, parent, time, tol, choices):
         tk.Frame.__init__(self, parent)
+        self.time = time
         self.count = time
         self.scr = 0
         self.ans = 5
@@ -156,6 +159,16 @@ class App(tk.Frame):
             self.ans = y - x
             return prompt
 
+        def subCustom():
+            x = random.randint(1, 9)
+            y = random.randint(1, 9)
+            x, y = sorted([x, y])
+            x = x + random.randint(1, 9) * 10
+            x, y = sorted([x, y])
+            prompt = '{} - {} ='.format(y, x)
+            self.ans = y - x
+            return prompt
+
         def mul12():
             x = random.randint(1, 100)
             prompt = '{} * 12 ='.format(x)
@@ -204,6 +217,15 @@ class App(tk.Frame):
         self.count -=1
         if self.count <= 0:
             messagebox.showinfo("TIME'S UP!", "YOUR SCORE = {}".format(self.scr))
+            # Append result to log
+            datetime = get_datetime()
+            log_score = "grind_sheet.txt"
+            log = datetime + " | " + "score = " + str(self.scr) + " | " + "time = " \
+                  + str(self.time) + " | " + "tests = " + " ;".join([fn.__name__ for fn in self.tests]) \
+                  + "\n"
+            print("Result >>", log)
+            with open(log_score, "a") as f:
+                f.write(log)
             self.parent.destroy()
         else:
             self.timer['text'] = "Seconds left: " + str(self.count)
