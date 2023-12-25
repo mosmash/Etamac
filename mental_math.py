@@ -17,6 +17,24 @@ def get_datetime():
 
 
 class SelectionPage(tk.Tk):
+    def display_logs(self):
+        with open("logs.json", "r") as f:
+            logs_data = json.load(f)
+        # Create a new tkinter window
+        window = tk.Toplevel(self)
+        # Create a treeview in the new window
+        treeview = ttk.Treeview(window, columns=list(logs_data[0].keys()), show="headings")
+        # Set the column identifiers and headings
+        for column in logs_data[0].keys():
+            treeview.heading(column, text=column)
+        # Insert a new parent item for each log
+        for i, log in enumerate(logs_data):
+            parent = treeview.insert("", "end", values=list(log.values()))
+            # Insert a new child item for each log in the 'logs' array
+            for j, log_entry in enumerate(log['logs']):
+                treeview.insert(parent, "end", values=('', '', '', log_entry))
+        treeview.pack(fill="both", expand=True)
+
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         mainframe = tk.Frame(self)
@@ -39,8 +57,6 @@ class SelectionPage(tk.Tk):
         self.display_logs_button = Button(mainframe, text="Display Logs", command=self.display_logs)
         self.display_logs_button.grid(row=5, column=1)
 
-
-
         def start_practice():
             print(tkvar.get())
             time = 120
@@ -61,21 +77,6 @@ class SelectionPage(tk.Tk):
 
         MyButton1 = Button(mainframe, text="Submit", width=10, command=start_practice)
         MyButton1.grid(row=3, column=1)
-
-    def display_logs(self):
-        with open("logs.json", "r") as f:
-            logs_data = json.load(f)
-        # Create a new tkinter window
-        window = tk.Toplevel(self)
-        # Create a treeview in the new window
-        treeview = ttk.Treeview(window, columns=list(logs_data), show="headings")
-        # Set the column identifiers and headings
-        for column in logs_data.keys():
-            treeview.heading(column, text=column)
-        # Insert a new item for each log
-        for log in logs_data:
-            treeview.insert("", "end", values=list(log.values()))
-        treeview.pack(fill="both", expand=True)
 
 class App(tk.Frame):
     def __init__(self, parent, time, tol, choices):
@@ -121,6 +122,11 @@ class App(tk.Frame):
         self.pack()
 
         self.onUpdate()
+
+    # Flash window colour
+    def flash(self, color):
+        self.parent.configure(background=color)
+        self.parent.after(300, lambda: self.parent.configure(background='white'))
 
     def speak(self, prompt):
         #self.engine.say(prompt)
@@ -243,6 +249,7 @@ class App(tk.Frame):
         print('diff:', diff, '|exact?', self.exact, '| tol:', self.tol, '| my ans:', user_ans)
 
         if diff == 0 or (not self.exact and diff < self.tol):
+            self.flash("green")
             time_spent = time_module.time() - self.start_time
             log = {"Question": self.prompt["text"], "Answer": self.ans, "Time spent": time_spent }
             self.logs.append(log)
@@ -254,6 +261,7 @@ class App(tk.Frame):
             self.scr += 1
             self.answer.delete(0, 'end')
         else:
+            self.flash("red")
             self.scr -=2
 
         self.score["text"] = "score: " + str(self.scr)
