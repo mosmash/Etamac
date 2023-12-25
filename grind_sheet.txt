@@ -1,4 +1,0 @@
-20/12/2023 10:06:10 | score = 38 | time = 120 | tests = subCustom
-20/12/2023 10:10:23 | score = 40 | time = 120 | tests = subCustom
-20/12/2023 10:15:17 | score = 42 | time = 120 | tests = Hard1DigSub
-20/12/2023 10:17:52 | score = 28 | time = 120 | tests = sub
