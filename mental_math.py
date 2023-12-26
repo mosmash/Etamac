@@ -25,7 +25,7 @@ class SelectionPage(tk.Tk):
         # Create a treeview in the new window
         treeview = ttk.Treeview(window, columns=list(logs_data[0].keys()), show="headings")
         # Set the column identifiers and headings
-        for column in logs_data[0].keys():
+        for column in logs_data[-1].keys():
             treeview.heading(column, text=column)
         # Insert a new parent item for each log
         for i, log in enumerate(logs_data):
@@ -89,6 +89,7 @@ class App(tk.Frame):
         self.tol = tol
 
         self.choices = choices
+        self.questionType = None
 
         self.parent = parent
         self.start_time = time_module.time()
@@ -239,8 +240,7 @@ class App(tk.Frame):
         #self.tests = [square_root]
 
         #self.tests = [add, square_root]
-
-
+        self.questionType = random.choice(self.tests).__name__
         return random.choice(self.tests)()
 
     def check_answer(self, event):
@@ -251,7 +251,7 @@ class App(tk.Frame):
         if diff == 0 or (not self.exact and diff < self.tol):
             self.flash("green")
             time_spent = time_module.time() - self.start_time
-            log = {"Question": self.prompt["text"], "Answer": self.ans, "Time spent": time_spent }
+            log = {"Question": self.prompt["text"], "Answer": self.ans, "Time spent": time_spent, "Question Type": self.questionType}
             self.logs.append(log)
             self.correct_ans["text"] = self.prompt["text"] + ('%.3f'% self.ans)
             self.start_time = time_module.time()
