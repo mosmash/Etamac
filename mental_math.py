@@ -43,7 +43,7 @@ class SelectionPage(tk.Tk):
         mainframe.rowconfigure(0, weight=1)
         mainframe.pack(pady=100, padx=100)
         tkvar = StringVar(self)
-        choices = {'add_sub', 'add', 'sub', 'Hard1DigSub', 'all', 'div3digit'}
+        choices = {'add_sub', 'add', 'sub', 'Hard1DigSub', 'all', 'div3digit', 'mul11', 'mul12'}
         Label(mainframe, text="Choose a test").grid(row=1, column=1)
         Label(mainframe, text="Enter test time").grid(row=3, column=1)
         time_entry = Entry(mainframe)
@@ -69,7 +69,7 @@ class SelectionPage(tk.Tk):
                             'add': ['add'],
                             'Hard1DigSub': ['Hard1DigSub'],
                             'sub': ['sub'],
-                            'all': ['add', 'sub', 'mul2digit', 'div3digit'],
+                            'all': ['add', 'sub', 'mul2digit', 'div3digit', 'mul11', 'mul12'],
                             'div3digit': ['div3digit'],}
 
             app = App(root, time, tol, choices_dict[tkvar.get()])
@@ -240,8 +240,9 @@ class App(tk.Frame):
         #self.tests = [square_root]
 
         #self.tests = [add, square_root]
-        self.questionType = random.choice(self.tests).__name__
-        return random.choice(self.tests)()
+        question = random.choice(self.tests)
+        self.questionType = question.__name__
+        return question()
 
     def check_answer(self, event):
         user_ans = float(self.answer.get().strip())
@@ -257,7 +258,7 @@ class App(tk.Frame):
             self.start_time = time_module.time()
             prompt = self.next_question()
             self.prompt["text"] = prompt
-            #self.speak(prompt)
+            #self.spk(prompt)
             self.scr += 1
             self.answer.delete(0, 'end')
         else:
