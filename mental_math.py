@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 import time as time_module
 import json
+import numpy as np
 
 
 def get_datetime():
@@ -17,6 +18,16 @@ def get_datetime():
 
 
 class SelectionPage(tk.Tk):
+    choices_dict = {
+    'add_sub': [(['add', 'sub'], 1.0)],
+    'add': [(['add'], 1.0)],
+    'Hard1DigSub': [(['Hard1DigSub'], 1.0)],
+    'sub': [(['sub'], 1.0)],
+    'all': [(['add', 'sub', 'mul2digit', 'div3digit', 'mul12'], 0.05), (['mul11'], 0.95)],
+    'mul11': [(['mul11'], 1.0)],
+    'div3digit': [(['div3digit'], 1.0)],
+    }
+
     def display_logs(self):
         with open("logs.json", "r") as f:
             logs_data = json.load(f)
@@ -43,7 +54,7 @@ class SelectionPage(tk.Tk):
         mainframe.rowconfigure(0, weight=1)
         mainframe.pack(pady=100, padx=100)
         tkvar = StringVar(self)
-        choices = {'add_sub', 'add', 'sub', 'Hard1DigSub', 'all', 'div3digit', 'mul11', 'mul12'}
+        choices = self.choices_dict.keys()
         Label(mainframe, text="Choose a test").grid(row=1, column=1)
         Label(mainframe, text="Enter test time").grid(row=3, column=1)
         time_entry = Entry(mainframe)
@@ -65,14 +76,9 @@ class SelectionPage(tk.Tk):
 
             tol = 0.1 # approximation error tol
             root = Tk()
-            choices_dict = {'add_sub': ['add', 'sub'],
-                            'add': ['add'],
-                            'Hard1DigSub': ['Hard1DigSub'],
-                            'sub': ['sub'],
-                            'all': ['add', 'sub', 'mul2digit', 'div3digit', 'mul11', 'mul12'],
-                            'div3digit': ['div3digit'],}
 
-            app = App(root, time, tol, choices_dict[tkvar.get()])
+            choices = self.choices_dict[tkvar.get()]
+            app = App(root, time, tol, choices)
             root.mainloop()
 
         MyButton1 = Button(mainframe, text="Submit", width=10, command=start_practice)
@@ -88,8 +94,8 @@ class App(tk.Frame):
         self.exact = True
         self.tol = tol
 
-        self.choices = choices
         self.questionType = None
+        self.choices = choices
 
         self.parent = parent
         self.start_time = time_module.time()
@@ -227,7 +233,13 @@ class App(tk.Frame):
             return prompt
 
         this_fn = locals()
-        self.tests = [this_fn[i] for i in self.choices]
+        # Zip the function names and their choice probabilities
+        choices, probs = zip(*self.choices)
+        # merge all choices into one list
+        self.tests = [choice for choice_list in choices for choice in choice_list]
+        # Randomly select a question type based on the choice probabilities
+        question = np.random.choice([i for i in range(len(self.choices))], p=probs )
+        question = random.choice(choices[question])
         #self.tests = [add, sub]
 
         #self.tests = [sub]
@@ -240,9 +252,10 @@ class App(tk.Frame):
         #self.tests = [square_root]
 
         #self.tests = [add, square_root]
-        question = random.choice(self.tests)
-        self.questionType = question.__name__
-        return question()
+        self.questionType = question
+        #call the function
+        prompt = this_fn[question]()
+        return prompt
 
     def check_answer(self, event):
         user_ans = float(self.answer.get().strip())
@@ -280,7 +293,7 @@ class App(tk.Frame):
                 "date": datetime,
                 "score": self.scr,
                 "time": self.time,
-                "tests": [fn.__name__ for fn in self.tests],
+                "tests": self.tests,
                 "logs": self.logs
             }
              # Create a new tkinter window
