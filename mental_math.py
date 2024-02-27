@@ -1,3 +1,4 @@
+import statistics
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
@@ -9,6 +10,41 @@ import time as time_module
 import json
 import numpy as np
 
+
+def calculate_average_times(logs_data):
+    # Group logs by question type
+    question_types = {}
+    for log in logs_data:
+        question_type = log["Question Type"]
+        if question_type not in question_types:
+            question_types[question_type] = []
+        question_types[question_type].append(log["Time spent"])
+
+    # Calculate average time for each question type
+    average_times = {}
+    for question_type, times in question_types.items():
+        average_times[question_type] = statistics.mean(times)
+
+    # Sort by average time
+    sorted_average_times = sorted(average_times.items(), key=lambda item: item[1], reverse=True)
+
+    return sorted_average_times
+
+def display_average_times(parent, logs_data):
+    # Calculate average times
+    average_times = calculate_average_times(logs_data)
+
+    # Create a new tkinter window
+    window = tk.Toplevel(parent)
+    # Create a treeview in the new window
+    treeview = ttk.Treeview(window, columns=["Question Type", "Average Time"], show="headings")
+    # Set the column identifiers and headings
+    treeview.heading("Question Type", text="Question Type")
+    treeview.heading("Average Time", text="Average Time")
+    # Insert a new item for each average time
+    for question_type, average_time in average_times:
+        treeview.insert("", "end", values=(question_type, average_time))
+    treeview.pack()
 
 def get_datetime():
     # datetime object containing current date and time
@@ -23,8 +59,9 @@ class SelectionPage(tk.Tk):
     'add': [(['add'], 1.0)],
     'Hard1DigSub': [(['Hard1DigSub'], 1.0)],
     'sub': [(['sub'], 1.0)],
-    'all': [(['add', 'sub', 'mul2digit', 'div3digit', 'mul12'], 0.05), (['mul11'], 0.95)],
+    'all': [(['add', 'sub', 'mul2digit', 'div3digit', 'mul12'], 0.95), (['mul11'], 0.05)],
     'mul11': [(['mul11'], 1.0)],
+    'mul2digit': [(['mul2digit'], 1.0)],
     'div3digit': [(['div3digit'], 1.0)],
     }
 
@@ -102,12 +139,12 @@ class App(tk.Frame):
         self.logs = []
 
         self.parent.title("MENTAL MATH QUANT GRIND")
-        self.parent.geometry("700x130")
+        self.parent.geometry("1000x175")
 
         self.prompt = Label(self, text="2+3=", bg="gainsboro", width=10,
-                        font = ("Roman", 40), anchor = 'e')  # shift text to left: east
+                        font = ("Arial", 40), anchor = 'e')  # shift text to left: east
 
-        self.answer = Entry(self, font=("Roman", 40), width=20)
+        self.answer = Entry(self, font=("Arial", 40), width=20)
         self.answer.bind("<Return>", self.check_answer)
 
 
@@ -118,7 +155,7 @@ class App(tk.Frame):
 
         self.motive = Label(self, text=motive, font=("Helvetica", 10, "italic"))
 
-        self.correct_ans = Label(self, font=("Roman", 20))
+        self.correct_ans = Label(self, font=("Arial", 20))
 
         self.prompt.grid(row=0)
         self.answer.grid(row=0, column=1)
@@ -313,11 +350,13 @@ class App(tk.Frame):
                 # If file exists, load the existing data
                 with open("logs.json", "r") as f:
                     logs_data = json.load(f)
+            display_average_times(self.parent, self.logs)
             # Append the new data
             logs_data.append(test_info)
             # Write the data back to the file
             with open("logs.json", "w") as f:
                 json.dump(logs_data, f)
+
         else:
             self.timer['text'] = "Seconds left: " + str(self.count)
             # schedule timer to call myself after 1 second
